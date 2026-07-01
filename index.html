@@ -63,10 +63,13 @@
     box-shadow:0 0 0 3px rgba(34,197,94,.18)}
   .dot.off{background:#F59E0B;box-shadow:0 0 0 3px rgba(245,158,11,.18)}
   .side-foot .hint{margin:12px 4px 0;font-size:11px;color:#5C6470;line-height:1.55}
-  .change-resto{margin-top:12px;background:transparent;border:1px solid rgba(255,255,255,.1);
-    color:#9BA3AF;padding:9px 12px;border-radius:9px;font-size:12px;font-weight:600;
-    cursor:pointer;width:100%;transition:.16s;font-family:var(--font)}
-  .change-resto:hover{background:rgba(255,255,255,.05);color:#C5CBD3}
+  .side-action{margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.1);
+    color:#9BA3AF;padding:10px 12px;border-radius:9px;font-size:12.5px;font-weight:600;
+    cursor:pointer;width:100%;transition:.16s;font-family:var(--font);
+    display:flex;align-items:center;gap:9px}
+  .side-action .ic-svg{width:15px;height:15px}
+  .side-action:hover{background:rgba(255,255,255,.05);color:#C5CBD3}
+  .side-action.logout:hover{background:rgba(214,35,0,.15);color:#FF8A75;border-color:rgba(214,35,0,.3)}
 
   /* ---------- Main ---------- */
   .main{flex:1;margin-left:264px;min-height:100vh;display:flex;flex-direction:column}
@@ -136,7 +139,15 @@
   .cuve.bad input{background:rgba(255,255,255,.7)}
   .cuve .badge.empty{color:#AEB5BE}
 
-  .save-row{display:flex;align-items:center;gap:10px;margin-top:24px}
+  .save-row{display:flex;align-items:center;gap:14px;margin-top:24px;flex-wrap:wrap}
+  .save-btn{display:inline-flex;align-items:center;gap:9px;background:var(--accent);color:#fff;
+    border:0;border-radius:12px;padding:14px 22px;font-size:15px;font-weight:700;cursor:pointer;
+    font-family:var(--font);letter-spacing:-0.01em;transition:.16s;box-shadow:0 2px 8px rgba(214,35,0,.25)}
+  .save-btn .ic-svg{width:18px;height:18px}
+  .save-btn:hover{background:var(--accent-deep)}
+  .save-btn:active{transform:scale(.98)}
+  .save-btn.done{background:var(--ok);box-shadow:0 2px 8px rgba(14,124,90,.25)}
+  .save-btn:disabled{opacity:.6;cursor:default}
   .save-state{font-size:13px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:7px}
   .save-state .ic-svg{width:15px;height:15px}
   .save-state.saved{color:var(--ok)}
@@ -253,6 +264,26 @@
     backdrop-filter:blur(2px)}
   .overlay.show{display:block}
 
+  /* Modale changement de code */
+  .modal-ov{display:none;position:fixed;inset:0;z-index:80;background:rgba(20,24,31,.5);
+    backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:24px}
+  .modal-ov.show{display:flex}
+  .modal{background:var(--surface);border-radius:20px;padding:26px 24px;max-width:360px;width:100%;
+    box-shadow:var(--shadow-lg)}
+  .modal h3{margin:0 0 4px;font-size:17px;color:var(--ink);font-weight:750;letter-spacing:-0.02em}
+  .modal-sub{margin:0 0 18px;font-size:13px;color:var(--muted)}
+  .modal-sub b{color:var(--ink-2)}
+  .modal input{width:100%;border:1.5px solid var(--line);border-radius:11px;padding:13px;
+    font-size:18px;font-weight:700;text-align:center;letter-spacing:8px;color:var(--ink);
+    outline:none;margin-bottom:10px;font-family:var(--font);transition:.14s}
+  .modal input::placeholder{letter-spacing:0;font-weight:600;color:#BFC5CD;font-size:14px}
+  .modal input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .modal-err{font-size:13px;font-weight:600;color:var(--accent);min-height:18px;margin:2px 0 12px;text-align:center}
+  .modal-actions{display:flex;gap:10px}
+  .btn-ghost{border:1.5px solid var(--line);background:var(--surface);color:var(--ink-2);
+    border-radius:11px;padding:13px 18px;font-size:14px;font-weight:650;cursor:pointer;font-family:var(--font)}
+  .btn-ghost:hover{background:#FAFBFC;border-color:#D2D7DD}
+
   /* Login */
   .login{position:fixed;inset:0;z-index:100;background:var(--nav);
     display:flex;align-items:center;justify-content:center;padding:24px}
@@ -354,7 +385,8 @@
     <div class="side-foot">
       <div class="sync-pill"><span class="dot" id="syncDot"></span><span id="syncTxt">Connecté</span></div>
       <p class="hint">Seuil légal 25 % · changer dès 24 %.<br>M1·M2·M3 snack — F1·F2·F3 frites.</p>
-      <button id="changeResto" class="change-resto">Changer de restaurant</button>
+      <button id="changeCode" class="side-action"><svg class="ic-svg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Changer le code</button>
+      <button id="logoutBtn" class="side-action logout"><svg class="ic-svg" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg> Se déconnecter</button>
     </div>
   </aside>
   <div class="overlay" id="overlay"></div>
@@ -393,7 +425,8 @@
         </div>
 
         <div class="save-row">
-          <span class="save-state" id="saveState">Saisie auto-enregistrée</span>
+          <button id="saveBtn" class="save-btn"><svg class="ic-svg" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> Enregistrer le relevé</button>
+          <span class="save-state" id="saveState"></span>
         </div>
         <div class="last-saved" id="lastSaved"></div>
 
@@ -469,6 +502,22 @@
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <!-- Modale changement de code -->
+  <div class="modal-ov" id="codeModal">
+    <div class="modal">
+      <h3>Changer le code du restaurant</h3>
+      <p class="modal-sub">Restaurant : <b id="modalResto">—</b></p>
+      <input id="oldCode" placeholder="Code actuel" inputmode="numeric" maxlength="4" type="password">
+      <input id="newCode1" placeholder="Nouveau code (4 chiffres)" inputmode="numeric" maxlength="4" type="password">
+      <input id="newCode2" placeholder="Confirmer le nouveau code" inputmode="numeric" maxlength="4" type="password">
+      <div class="modal-err" id="codeErr"></div>
+      <div class="modal-actions">
+        <button class="btn-ghost" id="codeCancel">Annuler</button>
+        <button class="btn-main" id="codeSave" style="margin:0;flex:1">Valider</button>
+      </div>
+    </div>
+  </div>
 
 <script>
 // ============ CONFIG SUPABASE ============
@@ -555,10 +604,49 @@ async function submitCreate(){
   }catch(e){ err.textContent="Erreur de création. Réessaie."; }
 }
 
-function changeResto(){
+function logout(){
   localStorage.removeItem("bk_resto");
   RESTO="";cache={};
+  // vider l'écran
+  document.getElementById("restoLabel").textContent="Composés polaires · TPM";
   showLogin();
+}
+
+// --- Changement de code ---
+function openCodeModal(){
+  document.getElementById("modalResto").textContent=RESTO;
+  document.getElementById("oldCode").value="";
+  document.getElementById("newCode1").value="";
+  document.getElementById("newCode2").value="";
+  document.getElementById("codeErr").textContent="";
+  document.getElementById("codeModal").classList.add("show");
+}
+function closeCodeModal(){document.getElementById("codeModal").classList.remove("show");}
+async function saveNewCode(){
+  const err=document.getElementById("codeErr");
+  const oldC=cleanCode(document.getElementById("oldCode").value);
+  const n1=cleanCode(document.getElementById("newCode1").value);
+  const n2=cleanCode(document.getElementById("newCode2").value);
+  err.textContent="";
+  if(oldC.length!==4){err.textContent="Entre le code actuel (4 chiffres).";return;}
+  if(n1.length!==4){err.textContent="Le nouveau code doit faire 4 chiffres.";return;}
+  if(n1!==n2){err.textContent="Les deux nouveaux codes ne correspondent pas.";return;}
+  err.textContent="Vérification…";
+  // vérifier le code actuel en base
+  const r=await lookupResto(RESTO);
+  if(r.state==="offline"){err.textContent="Pas de connexion. Réessaie avec le wifi.";return;}
+  if(r.state!=="found"){err.textContent="Erreur : restaurant introuvable.";return;}
+  if(r.code!==oldC){err.textContent="Code actuel incorrect.";return;}
+  // mettre à jour le code
+  try{
+    await sbFetch("restos?resto=eq."+encodeURIComponent(RESTO),{
+      method:"PATCH",
+      headers:{"Prefer":"return=representation"},
+      body:JSON.stringify({code:n1})
+    });
+    closeCodeModal();
+    showToast("Code modifié ✓");
+  }catch(e){ err.textContent="Erreur lors de la modification. Réessaie."; }
 }
 
 // ---------- utils ----------
@@ -691,6 +779,19 @@ function loadIntoForm(){
     ls.textContent="Dernière saisie "+current.service+" le "+t.toLocaleDateString("fr-FR")+" à "+
       t.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
   }else{ls.textContent="Pas encore de relevé pour ce service.";}
+  // état du bouton Enregistrer
+  const btn=document.getElementById("saveBtn");
+  if(btn){
+    if(row.updated_at){
+      btn.classList.add("done");
+      btn.innerHTML='<svg class="ic-svg" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Enregistré ✓';
+    }else{
+      btn.classList.remove("done");
+      btn.innerHTML='<svg class="ic-svg" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> Enregistrer le relevé';
+    }
+    btn.disabled=false;
+  }
+  document.getElementById("saveState").textContent="";
 }
 function readForm(){
   const row={resto:RESTO,jour:current.jour,service:current.service,updated_at:new Date().toISOString()};
@@ -703,20 +804,38 @@ function readForm(){
   return row;
 }
 function scheduleSave(){
-  const st=document.getElementById("saveState");
-  st.textContent="Enregistrement…";st.classList.remove("saved");
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(doSave,700);
+  // Sauvegarde locale silencieuse à chaque frappe (filet de sécurité, pas d'envoi réseau ici)
+  setRow(current.jour,current.service,readForm());
+  // remet le bouton en état "à enregistrer"
+  const btn=document.getElementById("saveBtn");
+  if(btn){btn.classList.remove("done");btn.disabled=false;
+    btn.innerHTML='<svg class="ic-svg" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> Enregistrer le relevé';}
+  document.getElementById("saveState").textContent="";
 }
 async function doSave(){
   const row=readForm();
   setRow(current.jour,current.service,row);
   const st=document.getElementById("saveState");
-  if(!SUPABASE_ANON_KEY||SUPABASE_ANON_KEY.length<40){st.textContent="Enregistré (local)";st.classList.add("saved");return;}
+  const btn=document.getElementById("saveBtn");
+  if(!SUPABASE_ANON_KEY||SUPABASE_ANON_KEY.length<40){
+    st.textContent="Enregistré (local)";st.classList.add("saved");return;
+  }
+  btn.disabled=true;
+  st.textContent="Enregistrement…";st.classList.remove("saved");
   try{
-    await pushRow(row); st.innerHTML='<svg class="ic-svg" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Enregistré';st.classList.add("saved");setSync("online");
+    await pushRow(row);
+    btn.classList.add("done");
+    btn.innerHTML='<svg class="ic-svg" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Enregistré ✓';
+    st.textContent="";st.classList.add("saved");
+    setSync("online");
+    // rafraîchir l'historique / analyse
+    renderHist(); renderAnalyse();
   }catch(e){
-    enqueue(row); st.innerHTML='<svg class="ic-svg" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Sauvé hors-ligne';st.classList.add("saved");setSync("offline");
+    enqueue(row);
+    btn.disabled=false;
+    btn.innerHTML='<svg class="ic-svg" viewBox="0 0 24 24"><path d="M12 8v4M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg> Sauvé hors-ligne';
+    st.textContent="Sera envoyé au retour du wifi";st.classList.add("saved");
+    setSync("offline");
   }
 }
 
@@ -832,9 +951,14 @@ function bindStaticEvents(){
   document.getElementById("todayBtn").addEventListener("click",goToday);
   document.getElementById("initiales").addEventListener("input",scheduleSave);
   document.getElementById("remarque").addEventListener("input",scheduleSave);
+  document.getElementById("saveBtn").addEventListener("click",doSave);
   document.getElementById("burger").addEventListener("click",openSidebar);
   document.getElementById("overlay").addEventListener("click",closeSidebar);
-  document.getElementById("changeResto").addEventListener("click",changeResto);
+  document.getElementById("logoutBtn").addEventListener("click",logout);
+  document.getElementById("changeCode").addEventListener("click",openCodeModal);
+  document.getElementById("codeCancel").addEventListener("click",closeCodeModal);
+  document.getElementById("codeSave").addEventListener("click",saveNewCode);
+  document.getElementById("codeModal").addEventListener("click",e=>{if(e.target.id==="codeModal")closeCodeModal();});
   // écran de connexion / création
   document.getElementById("goConnect").addEventListener("click",()=>showStep("connect"));
   document.getElementById("goCreate").addEventListener("click",()=>showStep("create"));
