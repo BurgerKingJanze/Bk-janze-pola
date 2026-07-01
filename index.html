@@ -204,18 +204,24 @@
   .pill.bad{background:var(--bad-bg);color:var(--bad)}
   .pill.none{background:var(--line-2);color:var(--muted)}
 
-  .hist-row{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line-2)}
-  .hist-row:last-child{border-bottom:0}
-  .hist-row .d{font-weight:700;color:var(--ink-2);font-size:13.5px;min-width:92px;letter-spacing:-0.01em}
-  .hist-row .s{font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;
-    background:var(--line-2);color:var(--ink-2)}
-  .hist-vals{display:flex;gap:5px;margin-left:auto;flex-wrap:wrap}
-  .chip{font-size:12px;font-weight:700;padding:4px 8px;border-radius:7px;min-width:34px;
-    text-align:center;font-variant-numeric:tabular-nums}
-  .chip.ok{background:var(--ok-bg);color:var(--ok)}
-  .chip.warn{background:var(--warn-bg);color:var(--warn)}
-  .chip.bad{background:var(--bad-bg);color:var(--bad)}
-  .chip.none{background:var(--line-2);color:#AEB5BE}
+  .hist-day{margin-bottom:22px}
+  .hist-day:last-child{margin-bottom:0}
+  .hist-day-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:-0.01em}
+  .hist-table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);
+    border-radius:12px;overflow:hidden}
+  .hist-table th{background:var(--bg);font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;
+    color:var(--muted);font-weight:700;padding:9px 6px;text-align:center;border-bottom:1px solid var(--line)}
+  .hist-table th:first-child{text-align:left;padding-left:12px}
+  .hist-table td{padding:10px 6px;text-align:center;font-size:14px;font-weight:700;
+    font-variant-numeric:tabular-nums;border-bottom:1px solid var(--line-2)}
+  .hist-table tr:last-child td{border-bottom:0}
+  .svc-cell{text-align:left !important;padding-left:12px !important;font-size:12.5px;font-weight:700}
+  .svc-cell.midi{color:var(--warn)}
+  .svc-cell.soir{color:#5B5BD6}
+  .hcell.ok{background:var(--ok-bg);color:var(--ok)}
+  .hcell.warn{background:var(--warn-bg);color:var(--warn)}
+  .hcell.bad{background:var(--bad-bg);color:var(--bad)}
+  .hcell.none{color:#C2C8D0;font-weight:600}
 
   .empty{text-align:center;color:var(--muted);padding:44px 20px;font-weight:500;font-size:14px}
 
@@ -871,8 +877,8 @@ function renderAnalyse(){
     {lbl:"Cuves OK",val:okN,cls:"ok"},
     {lbl:"À surveiller",val:warnN,cls:"warn"},
     {lbl:"À changer",val:badN,cls:"bad"},
-    {lbl:"TPM moyen",val:moy!=null?moy.toFixed(1):"—",cls:"brown"},
-    {lbl:"TPM max",val:mx!=null?mx.toFixed(1):"—",cls:"brown"},
+    {lbl:"TPM moyen",val:moy!=null?moy.toFixed(1):"—",cls:"accent"},
+    {lbl:"TPM max",val:mx!=null?mx.toFixed(1):"—",cls:"accent"},
   ];
   document.getElementById("kpis").innerHTML=kpis.map(k=>
     `<div class="kpi ${k.cls}"><div class="lbl">${k.lbl}</div><div class="val">${k.val}</div></div>`).join("");
@@ -902,12 +908,12 @@ function renderAnalyse(){
     const dd=cache[iso]||{};let mxx=null;
     ["Midi","Soir"].forEach(svc=>{const r=dd[svc];if(r)CUVES.forEach(c=>{if(r[c]!=null)mxx=Math.max(mxx??0,r[c]);});});
     const s=statusOf(mxx);const pct=mxx!=null?Math.min(100,(mxx/30)*100):0;
-    const col=s==="bad"?"var(--bk-red)":s==="warn"?"var(--bk-orange)":s==="ok"?"var(--green)":"#E0D5C6";
-    html+=`<div style="display:flex;align-items:center;gap:10px;margin:6px 0">
-      <span style="min-width:78px;font-size:12px;font-weight:700;color:var(--muted)">${d.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric"})}</span>
-      <div style="flex:1;background:#F0E9DE;border-radius:8px;height:18px;overflow:hidden">
-        <div style="width:${pct}%;height:100%;background:${col};border-radius:8px"></div></div>
-      <span style="min-width:42px;text-align:right;font-weight:800;font-size:13px">${mxx!=null?mxx.toFixed(1):"—"}</span>
+    const col=s==="bad"?"var(--bad)":s==="warn"?"var(--warn)":s==="ok"?"var(--ok)":"#E5E8EC";
+    html+=`<div style="display:flex;align-items:center;gap:10px;margin:8px 0">
+      <span style="min-width:78px;font-size:12px;font-weight:600;color:var(--muted)">${d.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric"})}</span>
+      <div style="flex:1;background:var(--line-2);border-radius:6px;height:16px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${col};border-radius:6px;transition:width .4s"></div></div>
+      <span style="min-width:44px;text-align:right;font-weight:700;font-size:13px;color:${mxx!=null?col:'var(--muted)'}">${mxx!=null?mxx.toFixed(1):"—"}</span>
     </div>`;
   }
   spark.innerHTML=html;
@@ -917,15 +923,30 @@ function renderAnalyse(){
 function renderHist(){
   const list=document.getElementById("histList");
   const jours=Object.keys(cache).sort().reverse();
-  if(!jours.length){list.innerHTML="<div class='empty'>Aucun relevé pour l'instant.<br>Commence par saisir le service du jour.</div>";return;}
+  // ne garder que les jours qui ont au moins un relevé
+  const joursAvecData=jours.filter(j=>cache[j]&&(cache[j].Midi||cache[j].Soir));
+  if(!joursAvecData.length){list.innerHTML="<div class='empty'>Aucun relevé pour l'instant.<br>Saisis le service du jour puis clique « Enregistrer le relevé ».</div>";return;}
   let html="";
-  jours.forEach(j=>{
+  joursAvecData.forEach(j=>{
+    const d=new Date(j+"T12:00:00");
+    const dateLabel=d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+    const dateCap=dateLabel.charAt(0).toUpperCase()+dateLabel.slice(1);
+    html+=`<div class="hist-day">
+      <div class="hist-day-title">${dateCap}</div>
+      <table class="hist-table">
+        <thead><tr><th>Service</th><th>M1</th><th>M2</th><th>M3</th><th>F1</th><th>F2</th><th>F3</th></tr></thead>
+        <tbody>`;
     ["Midi","Soir"].forEach(svc=>{
-      const r=cache[j]&&cache[j][svc];if(!r)return;
-      const chips=CUVES.map(c=>{const s=statusOf(r[c]);return `<span class="chip ${s}">${r[c]!=null?r[c]:"—"}</span>`;}).join("");
-      html+=`<div class="hist-row"><span class="d">${j}</span><span class="s">${svc}</span>
-        <div class="hist-vals">${chips}</div></div>`;
+      const r=cache[j]&&cache[j][svc];
+      if(!r){
+        html+=`<tr><td class="svc-cell ${svc.toLowerCase()}">${svc}</td>`+
+          CUVES.map(()=>`<td class="hcell none">—</td>`).join("")+`</tr>`;
+      }else{
+        html+=`<tr><td class="svc-cell ${svc.toLowerCase()}">${svc}</td>`+
+          CUVES.map(c=>{const s=statusOf(r[c]);return `<td class="hcell ${s}">${r[c]!=null?r[c]:"—"}</td>`;}).join("")+`</tr>`;
+      }
     });
+    html+=`</tbody></table></div>`;
   });
   list.innerHTML=html;
 }
